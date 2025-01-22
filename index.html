@@ -86,6 +86,32 @@
     .step-content { font-size: 24px; margin-bottom: 10px; }
     .amount-box { font-size: 24px; margin-bottom: 10px; }
 
+    /* Added styling for the answer input and check button */
+    #answer-input {
+      padding: 8px 12px;
+      font-size: 16px;
+      border: 2px solid #2E86C1;
+      border-radius: 5px;
+      outline: none;
+      margin-right: 10px;
+    }
+    #answer-input:focus {
+      border-color: #1B4F72;
+    }
+    #check-answer {
+      background-color: #2E86C1;
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #check-answer:hover {
+      background-color: #1B4F72;
+    }
+
     @media(max-width:768px) {
       h1 { font-size: 32px; }
       .question-text { font-size: 24px; }
@@ -124,8 +150,8 @@
   </div>
 
   <script>
+    // Added "correctAnswer" property for each question so we can check user input.
     const questions = [
-
       /* 8 Subtraction Questions */
       {
         type: 'subtraction',
@@ -152,6 +178,7 @@
             </table>
           </div>
         `,
+        correctAnswer: "4 km 112 m", // add your own formatting if you like
         steps: 1
       },
       {
@@ -179,6 +206,7 @@
             </table>
           </div>
         `,
+        correctAnswer: "3 km 331 m",
         steps: 1
       },
       {
@@ -206,6 +234,7 @@
             </table>
           </div>
         `,
+        correctAnswer: "4 m 4 cm",
         steps: 1
       },
       {
@@ -233,6 +262,7 @@
             </table>
           </div>
         `,
+        correctAnswer: "26 m 17 cm",
         steps: 1
       },
       {
@@ -260,6 +290,7 @@
             </table>
           </div>
         `,
+        correctAnswer: "5 m 17 cm",
         steps: 1
       },
       {
@@ -287,6 +318,7 @@
             </table>
           </div>
         `,
+        correctAnswer: "4 km 157 m",
         steps: 1
       },
       {
@@ -314,6 +346,7 @@
             </table>
           </div>
         `,
+        correctAnswer: "4 km 14 m",
         steps: 1
       },
       {
@@ -341,6 +374,7 @@
             </table>
           </div>
         `,
+        correctAnswer: "14 m 13 cm",
         steps: 1
       },
 
@@ -373,7 +407,8 @@
             </div>
           </div>`,
           `<div class="step solution">The total length of the branch is __ m __ cm.</div>`
-        ]
+        ],
+        correctAnswer: "9 m 21 cm" // 3.34 + 5.87 => 9 m 21 cm
       },
       {
         type: 'story',
@@ -403,7 +438,8 @@
             </div>
           </div>`,
           `<div class="step solution">He drove __ km __ m more in the first week.</div>`
-        ]
+        ],
+        correctAnswer: "3 km 179 m"
       },
       {
         type: 'story',
@@ -433,7 +469,8 @@
             </div>
           </div>`,
           `<div class="step solution">Total ribbon length = __ m __ cm.</div>`
-        ]
+        ],
+        correctAnswer: "96 m 4 cm" // 67.34 + 28.70 => 96 m 4 cm
       },
       {
         type: 'story',
@@ -465,7 +502,8 @@
             </div>
           </div>`,
           `<div class="step solution">The pipeline in good condition = __ km __ m.</div>`
-        ]
+        ],
+        correctAnswer: "4 km 478 m"
       },
       {
         type: 'story',
@@ -501,7 +539,8 @@
             Suraj threw the ball farther.<br>
             By __ m __ cm.
           </div>`
-        ]
+        ],
+        correctAnswer: "4 m 9 cm"
       },
       {
         type: 'story',
@@ -531,7 +570,8 @@
             </div>
           </div>`,
           `<div class="step solution">She walked __ km __ m.</div>`
-        ]
+        ],
+        correctAnswer: "1 km 50 m"
       }
     ];
 
@@ -573,9 +613,12 @@
       }
     }
 
+    // Renders either the entire “subtraction” question or the initial story question block
     function showQuestion() {
       currentStepIndex = -1;
       const q = questions[currentQuestionIndex];
+      
+      // Display question
       if (q.type === 'subtraction') {
         questionBox.innerHTML = q.content;
       } else {
@@ -589,14 +632,45 @@
           </div>
         `;
       }
+
+      // ---- ADDED: Textbox & Check button for user to enter and verify their answer ----
+      questionBox.innerHTML += `
+        <div style="margin-top: 10px;">
+          <input type="text" id="answer-input" placeholder="Enter your answer (e.g. 4 km 112 m)">
+          <button id="check-answer">Check</button>
+          <div id="feedback" style="margin-top: 10px; font-weight: bold;"></div>
+        </div>
+      `;
+      
+      // Add listener for check button
+      const checkBtn = questionBox.querySelector('#check-answer');
+      checkBtn.addEventListener('click', function() {
+        const userAnswer = questionBox.querySelector('#answer-input').value.trim();
+        const feedbackEl = questionBox.querySelector('#feedback');
+        if (!q.correctAnswer) {
+          // If there's no stored correctAnswer, we can't check
+          feedbackEl.textContent = "No official answer set. (Edit code to add correctAnswer if desired.)";
+          feedbackEl.style.color = "orange";
+        } else if (userAnswer.toLowerCase() === q.correctAnswer.toLowerCase()) {
+          feedbackEl.textContent = "Correct!";
+          feedbackEl.style.color = "green";
+        } else {
+          feedbackEl.textContent = "Incorrect, try again!";
+          feedbackEl.style.color = "red";
+        }
+      });
+      // -------------------------------------------------------------------------------
+
       updateProgress();
       updateNavButtons();
     }
 
+    // Moves to next step or next question
     function showNextStep() {
       const q = questions[currentQuestionIndex];
       currentStepIndex++;
       if (q.type === 'subtraction') {
+        // For a subtraction question, there's only 1 'step', so after showing it once, move on
         if (currentStepIndex > 0) {
           currentQuestionIndex++;
           if (currentQuestionIndex >= questions.length) {
@@ -612,6 +686,7 @@
           updateNavButtons();
         }
       } else {
+        // For a story question, reveal each step in order
         if (currentStepIndex < q.steps.length) {
           const stepsContainer = questionBox.querySelector('.story-steps');
           stepsContainer.innerHTML += q.steps[currentStepIndex];
@@ -632,6 +707,7 @@
       }
     }
 
+    // Moves to previous step or previous question
     function showPreviousStep() {
       if (currentQuestionIndex < 0) return;
       const q = questions[currentQuestionIndex];
@@ -666,7 +742,8 @@
     }
 
     function handleKey(e) {
-      const nextKeys = ['ArrowRight','ArrowDown','PageDown',' ','d','D','f','F'];
+      // Space removed from nextKeys so user can type spaces in the answer field
+      const nextKeys = ['ArrowRight','ArrowDown','PageDown','d','D','f','F'];
       const prevKeys = ['ArrowLeft','ArrowUp','PageUp','a','A','s','S'];
       if (nextKeys.includes(e.key)) { e.preventDefault(); showNextStep(); }
       if (prevKeys.includes(e.key)) { e.preventDefault(); showPreviousStep(); }
